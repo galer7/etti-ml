@@ -30,7 +30,7 @@ def main():
     P = [[0, 0], [0, 1], [1, 0], [1, 1]]
 
     # Labels
-    t = [0, 0, 0, 1]
+    t = [0, 1, 1, 1]
 
     # TODO - Application 1 - Step 2 - Initialize the weights with zero  (weights)
     w = [0, 0]

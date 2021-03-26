@@ -5,7 +5,7 @@ def activationFunction(n):
 
     # TODO - Application 1 - Step 4b - Define the binary step function as activation function
 
-    return 1 if n >= 0 else 0
+    return 1.0 / (1.0 + np.exp(-n))
 
 
 def forwardPropagation(p, weights, bias):

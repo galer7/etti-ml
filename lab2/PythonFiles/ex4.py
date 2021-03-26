@@ -11,6 +11,17 @@ def sigmoidDerivative(n):
     return n * (1 - n)
 
 
+def error_function(output, prediction):
+
+    s = 0
+    for i in range(len(output)):
+        s += (output[i] - prediction[i]) ** 2
+
+    s /= 2 * len(output)
+
+    return s
+
+
 def forwardPropagationLayer(p, weights, biases):
 
     a = None  # the layer output
@@ -46,11 +57,14 @@ def main():
     biasLayer1 = np.random.uniform(size=(1, noNeuronsLayer1))
     biasLayer2 = np.random.uniform(size=(1, noNeuronsLayer2))
 
-    noEpochs = 5000
+    noEpochs = 0
     learningRate = 0.3
+    total_error = 999
 
     # Train the network for noEpochs
-    for _ in range(noEpochs):
+    while total_error >= 0.01:
+        noEpochs += 1
+        total_error = 0
 
         # Forward Propagation
         hidden_layer_output = forwardPropagationLayer(points, weightsLayer1, biasLayer1)
@@ -78,6 +92,11 @@ def main():
         biasLayer1 = (
             biasLayer1 + np.sum(d_hidden_layer, axis=0, keepdims=True) * learningRate
         )
+
+        total_error = error_function(labels, predicted_output)
+        print(noEpochs)
+
+    print(f"Needed epochs: {noEpochs}")
 
     # Print weights and bias
     print("weightsLayer1 = {}".format(weightsLayer1))

@@ -39,10 +39,12 @@ def main():
     b = 0
 
     # TODO - Application 1 - Step 3 - Set the number of training steps  (epochs)
-    epochs = 100
+    epochs = 0
 
     # TODO - Application 1 - Step 4 - Perform the neuron training for multiple epochs
-    for ep in range(epochs):
+    while w != [2, 1] or b != -3:
+        epochs += 1
+
         for i in range(len(t)):
 
             # TODO - Application 1 - Step 4 - Call the forwardPropagation method
@@ -63,6 +65,7 @@ def main():
 
     # TODO - Application 1 - Print weights and bias
     print(f"weights: {w}, bias: {b}")
+    print(f"epochs needed: {epochs}")
 
     # TODO - Application 1 - Step 7 - Display the results
 

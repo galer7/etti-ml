@@ -3,12 +3,12 @@ import numpy as np
 
 def sigmoid(n):
 
-    return 1.0 / (1.0 + np.exp(-n))
+    return 2.0 / (1.0 + np.exp(-2 * n)) - 1
 
 
 def sigmoidDerivative(n):
 
-    return n * (1 - n)
+    return (1 + n) * (1 - n)
 
 
 def forwardPropagationLayer(p, weights, biases):
