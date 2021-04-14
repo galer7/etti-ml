@@ -1,0 +1,4 @@
+{
+  "python.pythonPath": "ml-venv\\Scripts\\python.exe",
+  "python.formatting.provider": "black"
+}
