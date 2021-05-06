@@ -72,44 +72,57 @@ def main():
 
     loss_L = 0
     dW = np.zeros(W.shape)
-    prev_loss = 100
+    prev_loss = 99
+    epochs = 0
 
-    # TODO - Application 3 - Step 2 - For each input data...
-    for idx, xsample in enumerate(x_train):
+    while abs(loss_L - prev_loss) > 0.001:
+        epochs += 1
+        prev_loss = loss_L
+        
+        # TODO - Application 3 - Step 2 - For each input data...
+        for idx, xsample in enumerate(x_train):
+            print(xsample)
 
-        # TODO - Application 3 - Step 2 - ...compute the scores s for all classes (call the method predict)
-        s = predict(xsample, W)
+            # TODO - Application 3 - Step 2 - ...compute the scores s for all classes (call the method predict)
+            s = predict(xsample, W)
 
-        # TODO - Application 3 - Step 3 - Call the function (computeLossForASample) that
-        #  compute the loss for a data point (loss_i)
-        loss_i = computeLossForASample(s, y_train[idx], delta)
+            # TODO - Application 3 - Step 3 - Call the function (computeLossForASample) that
+            #  compute the loss for a data point (loss_i)
+            loss_i = computeLossForASample(s, y_train[idx], delta)
 
-        # Print the scores - Uncomment this
-        print(
-            "Scores for sample {} with label {} is: {} and loss is {}".format(
-                idx, y_train[idx], s, loss_i
-            )
-        )
+            # Print the scores - Uncomment this
+            # print(
+            #     "Scores for sample {} with label {} is: {} and loss is {}".format(
+            #         idx, y_train[idx], s, loss_i
+            #     )
+            # )
 
-        # TODO - Application 3 - Step 4 - Call the function (computeLossGradientForASample) that
-        #  compute the gradient loss for a data point (dW_i)
-        dW_i = computeLossGradientForASample(W, s, x_train[idx], y_train[idx], delta)
+            # TODO - Application 3 - Step 4 - Call the function (computeLossGradientForASample) that
+            #  compute the gradient loss for a data point (dW_i)
+            dW_i = computeLossGradientForASample(W, s, x_train[idx], y_train[idx], delta)
 
-        # TODO - Application 3 - Step 5 - Compute the global loss for all the samples (loss_L)
-        loss_L += loss_i
+            # TODO - Application 3 - Step 5 - Compute the global loss for all the samples (loss_L)
+            loss_L += loss_i
 
-        # TODO - Application 3 - Step 6 - Compute the global gradient loss matrix (dW)
-        dW += dW_i
+            # TODO - Application 3 - Step 6 - Compute the global gradient loss matrix (dW)
+            dW += dW_i
 
-    # TODO - Application 3 - Step 7 - Compute the global normalized loss
-    loss_L = loss_L / len(y_train)
-    print("The global normalized loss = {}".format(loss_L))
 
-    # TODO - Application 3 - Step 8 - Compute the global normalized gradient loss matrix
-    dW = dW / len(y_train)
+        # TODO - Application 3 - Step 7 - Compute the global normalized loss
+        loss_L_norm = loss_L / len(y_train)
+        # print("The global normalized loss = {}".format(loss_L_norm))
 
-    # TODO - Application 3 - Step 9 - Adjust the weights matrix
-    W = W - step_size * dW
+        # TODO - Application 3 - Step 8 - Compute the global normalized gradient loss matrix
+        dW = dW / len(y_train)
+
+        # TODO - Application 3 - Step 9 - Adjust the weights matrix
+        W = W - step_size * dW
+
+
+        print(abs(prev_loss - loss_L))
+
+    print(f"Number of epochs: {epochs}")
+
 
     # TODO - Exercise 7 - After solving exercise 6, predict the labels for the points existent in x_test variable
     #  and compare them with the ground truth labels. What is the system accuracy?
@@ -118,7 +131,7 @@ def main():
         if np.argmax(predict(xsample, W)) == y_test[idx]:
             correctPredicted += 1
 
-    accuracy = correctPredicted / len(y_test)
+    accuracy = correctPredicted / len(y_test) * 100
     print("Accuracy for test = {}%".format(accuracy))
 
     return

@@ -2,3 +2,5 @@ ml-venv/
 *.rar
 *.pdf
 reports/
+etti-ml/
+*.rar

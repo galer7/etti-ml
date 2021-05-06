@@ -40,11 +40,11 @@ def main():
     noNeuronsLayer1 = 2
     noNeuronsLayer2 = 1
 
-    weightsLayer1 = np.random.uniform(size=(inputSize, noNeuronsLayer1))
-    weightsLayer2 = np.random.uniform(size=(noNeuronsLayer1, noNeuronsLayer2))
+    weightsLayer1 = np.random.standard_normal(size=(inputSize, noNeuronsLayer1))
+    weightsLayer2 = np.random.standard_normal(size=(noNeuronsLayer1, noNeuronsLayer2))
 
-    biasLayer1 = np.random.uniform(size=(1, noNeuronsLayer1))
-    biasLayer2 = np.random.uniform(size=(1, noNeuronsLayer2))
+    biasLayer1 = np.random.standard_normal(size=(1, noNeuronsLayer1))
+    biasLayer2 = np.random.standard_normal(size=(1, noNeuronsLayer2))
 
     noEpochs = 5000
     learningRate = 0.3
