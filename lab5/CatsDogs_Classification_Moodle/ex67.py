@@ -3,6 +3,7 @@ from keras import models
 from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
 from matplotlib import pyplot
+from keras.applications import VGG16
 
 import os
 import shutil
@@ -195,6 +196,49 @@ def defineCNNModelFromScratch(target_size):
     return model
 
 
+def defineCNNModelVGGPretrained(target_size):
+
+    # TODO - Exercise 6 - Load the pretrained VGG16 network in a variable called base_model
+    # The top layers will be omitted; The input_shape will be kept to (150, 150, 3)
+    base_model = VGG16(include_top=False, input_shape=(*target_size, 3))
+
+    # TODO - Exercise 6 - Visualize the network arhitecture (list of layers)
+    base_model.summary()
+
+    # TODO - Exercise 6 - Freeze the base_model layers to not to allow training
+    for layer in base_model.layers:
+        if "block5_conv" in layer.name:
+            layer.trainable = True
+        else:
+            layer.trainable = False
+
+    # Create the final model and add the layers from the base_model
+    VGG_model = models.Sequential()
+    VGG_model.add(base_model)
+
+    # TODO - Exercise 6 - Add the flatten layer
+    VGG_model.add(Flatten())
+
+    # TODO - Exercise 6 - Add the dropout layer
+    VGG_model.add(Dropout(0.5))
+
+    # TODO - Exercise 6 - Add a dense layer of size 512
+    VGG_model.add(Dense(512, activation="relu"))
+
+    # TODO - Exercise 6 - Add the output layer
+    VGG_model.add(Dense(1, activation="sigmoid"))
+
+    VGG_model.summary()
+
+    # TODO - Exercise 6 - Compile the model
+    VGG_model.compile(
+        optimizer=optimizers.RMSprop(lr=1e-4),
+        loss="binary_crossentropy",
+        metrics=["accuracy"],
+    )
+
+    return VGG_model
+
 
 def imagePreprocessing(base_directory, target_size):
 
@@ -229,6 +273,8 @@ def visualizeTheTrainingPerformances(history):
     val_loss = history.history["val_loss"]
 
     epochs = range(1, len(acc) + 1)
+    
+    pyplot.figure()
     pyplot.title("Training and validation accuracy")
     pyplot.plot(epochs, acc, "bo", label="Training accuracy")
     pyplot.plot(epochs, val_acc, "b", label="Validation accuracy")
@@ -259,26 +305,25 @@ def main():
     )
 
     # TODO - Application 1 - Step 3 - Call the method that creates the CNN model
-    model = defineCNNModelFromScratch(target_size)
+    model = defineCNNModelVGGPretrained(target_size)
 
     # TODO - Application 1 - Step 4 - Train the model
 
-    weights_name = "Model_cats_dogs_small_dataset.h5"
+    weights_name = "Model_cats_dogs_small_dataset_VGG16.h5"
 
     if not os.path.exists(weights_name):
         history = model.fit(
             train_generator,
             steps_per_epoch=100,
-            epochs=100,
+            epochs=10,
             validation_data=validation_generator,
             validation_steps=50,
         )
         model.save(weights_name)
-
         # TODO - Application 1 - Step 5 - Visualize the system performance using the diagnostic curves
         visualizeTheTrainingPerformances(history)
     else:
-        history = model.load_weights(weights_name)
+        model.load_weights(weights_name)
 
 
     scores = model.evaluate(validation_generator)

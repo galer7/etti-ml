@@ -6,3 +6,6 @@ etti-ml/
 *.rar
 Kaggle_Cats_And_Dogs_Dataset/
 Kaggle_Cats_And_Dogs_Dataset_Small/
+**/__pycache__/
+*.h5
+*.png

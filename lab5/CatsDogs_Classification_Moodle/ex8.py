@@ -3,6 +3,7 @@ from keras import models
 from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
 from matplotlib import pyplot
+from keras.applications import VGG16, Xception, InceptionV3, ResNet50, MobileNet
 
 import os
 import shutil
@@ -144,56 +145,55 @@ def prepareDatabase(original_directory, base_directory):
     return
 
 
-def defineCNNModelFromScratch(target_size):
+def defineCNNModelPretrained(models_arr=[]):
 
-    # Application 1 - Step 3 - Initialize the sequential model
-    model = models.Sequential()
+    # TODO - Exercise 6 - Load the pretrained VGG16 network in a variable called base_model
+    # The top layers will be omitted; The input_shape will be kept to (150, 150, 3)
 
-    # TODO - Application 1 - Step 3 - Create the first hidden layer as a convolutional layer
-    model.add(Conv2D(32, 3, input_shape=(*target_size, 3), activation="relu"))
+    for index, model in enumerate(models_arr):
 
-    # TODO - Application 1 - Step 3 - Define a pooling layer
-    model.add(MaxPooling2D())
+        base_model = model["model"](
+            include_top=False, input_shape=(*model["target_size"], 3)
+        )
 
-    # TODO - Application 1 - Step 3 - Create the third hidden layer as a convolutional layer
-    model.add(Conv2D(64, 3))
+        # TODO - Exercise 6 - Visualize the network arhitecture (list of layers)
+        # base_model.summary() 
 
-    # TODO - Application 1 - Step 3 - Define a pooling layer
-    model.add(MaxPooling2D())
+        # TODO - Exercise 6 - Freeze the base_model layers to not to allow training
+        for layer in base_model.layers:
+            if "block5_conv" in layer.name:
+                layer.trainable = True
+            else:
+                layer.trainable = False
 
-    # TODO - Application 1 - Step 3 - Create another convolutional layer
-    model.add(Conv2D(128, 3))
+        # Create the final model and add the layers from the base_model
+        extended_model = models.Sequential()
+        extended_model.add(base_model)
 
-    # TODO - Application 1 - Step 3 - Define a pooling layer
-    model.add(MaxPooling2D())
+        # TODO - Exercise 6 - Add the flatten layer
+        extended_model.add(Flatten())
 
-    # TODO - Application 1 - Step 3 - Create another convolutional layer
-    model.add(Conv2D(128, 3))
+        # TODO - Exercise 6 - Add the dropout layer
+        extended_model.add(Dropout(0.5))
 
-    # TODO - Application 1 - Step 3 - Define a pooling layer
-    model.add(MaxPooling2D())
+        # TODO - Exercise 6 - Add a dense layer of size 512
+        extended_model.add(Dense(512, activation="relu"))
 
-    # TODO - Application 1 - Step 3 - Define the flatten layer
-    model.add(Flatten())
+        # TODO - Exercise 6 - Add the output layer
+        extended_model.add(Dense(1, activation="sigmoid"))
 
-    # TODO - Application 1 - Step 3 - Define a dense layer of size 512
-    model.add(Dense(512))
+        extended_model.summary()
 
-    # TODO - Application 1 - Step 3 - Define the output layer
-    model.add(Dense(1, activation="sigmoid"))
+        # TODO - Exercise 6 - Compile the model
+        extended_model.compile(
+            optimizer=optimizers.RMSprop(lr=1e-4),
+            loss="binary_crossentropy",
+            metrics=["accuracy"],
+        )
 
-    # TODO - Application 1 - Step 3 - Visualize the network arhitecture (list of layers)
-    model.summary()
+        models_arr[index]["model"] = extended_model
 
-    # TODO - Application 1 - Step 3 - Compile the model
-    model.compile(
-        optimizer=optimizers.RMSprop(lr=1e-4),
-        loss="binary_crossentropy",
-        metrics=["accuracy"],
-    )
-
-    return model
-
+    return models_arr
 
 
 def imagePreprocessing(base_directory, target_size):
@@ -220,7 +220,7 @@ def imagePreprocessing(base_directory, target_size):
     return train_generator, validation_generator
 
 
-def visualizeTheTrainingPerformances(history):
+def visualizeTheTrainingPerformances(history, img_name=None):
 
     acc = history.history["accuracy"]
     val_acc = history.history["val_accuracy"]
@@ -229,10 +229,14 @@ def visualizeTheTrainingPerformances(history):
     val_loss = history.history["val_loss"]
 
     epochs = range(1, len(acc) + 1)
+    pyplot.figure()
     pyplot.title("Training and validation accuracy")
     pyplot.plot(epochs, acc, "bo", label="Training accuracy")
     pyplot.plot(epochs, val_acc, "b", label="Validation accuracy")
     pyplot.legend()
+
+    if img_name:
+        pyplot.savefig(f"ex8_ + {img_name} + _acc.png")
 
     pyplot.figure()
     pyplot.title("Training and validation loss")
@@ -240,7 +244,11 @@ def visualizeTheTrainingPerformances(history):
     pyplot.plot(epochs, val_loss, "b", label="Validation loss")
     pyplot.legend()
 
-    pyplot.show()
+    if img_name:
+        pyplot.savefig(f"ex8_ + {img_name} + _loss.png")
+
+    if not img_name:
+        pyplot.show()
 
     return
 
@@ -249,41 +257,46 @@ def main():
 
     original_directory = "../Kaggle_Cats_And_Dogs_Dataset"
     base_directory = "Kaggle_Cats_And_Dogs_Dataset_Small"
-    target_size = (64, 64)
+    target_size = (75, 75)
 
     prepareDatabase(original_directory, base_directory)
 
-    # TODO - Application 1 - Step 2 - Call the imagePreprocessing method
-    train_generator, validation_generator = imagePreprocessing(
-        base_directory, target_size
-    )
-
     # TODO - Application 1 - Step 3 - Call the method that creates the CNN model
-    model = defineCNNModelFromScratch(target_size)
+    models_arr = [
+        {"name": "Xception", "model": Xception, "target_size": target_size},
+        {"name": "InceptionV3", "model": InceptionV3, "target_size": target_size},
+        {"name": "ResNet50", "model": ResNet50, "target_size": target_size},
+        {"name": "MobileNet", "model": MobileNet, "target_size": (128, 128)},
+    ]
+    defineCNNModelPretrained(models_arr)
+    print(models_arr)
 
     # TODO - Application 1 - Step 4 - Train the model
 
-    weights_name = "Model_cats_dogs_small_dataset.h5"
+    for model in models_arr:
 
-    if not os.path.exists(weights_name):
-        history = model.fit(
-            train_generator,
-            steps_per_epoch=100,
-            epochs=100,
-            validation_data=validation_generator,
-            validation_steps=50,
+        train_generator, validation_generator = imagePreprocessing(
+            base_directory, model["target_size"]
         )
-        model.save(weights_name)
 
-        # TODO - Application 1 - Step 5 - Visualize the system performance using the diagnostic curves
-        visualizeTheTrainingPerformances(history)
-    else:
-        history = model.load_weights(weights_name)
+        weights_name = f"Model_cats_dogs_small_dataset_ex8_{model['name']}.h5"
+
+        if not os.path.exists(weights_name):
+            history = model["model"].fit(
+                train_generator,
+                steps_per_epoch=60,
+                epochs=10,
+                validation_data=validation_generator,
+                validation_steps=50,
+            )
+            model["model"].save(weights_name)
+            # TODO - Application 1 - Step 5 - Visualize the system performance using the diagnostic curves
+            visualizeTheTrainingPerformances(history, model['name'])
+        else:
+            model["model"].load_weights(weights_name)
 
 
-    scores = model.evaluate(validation_generator)
-
-    return
+        scores = model["model"].evaluate(validation_generator)
 
 
 if __name__ == "__main__":

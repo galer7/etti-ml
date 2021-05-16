@@ -3,6 +3,7 @@ from keras import models
 from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
 from matplotlib import pyplot
+from keras.applications import VGG16
 
 import os
 import shutil
@@ -179,6 +180,8 @@ def defineCNNModelFromScratch(target_size):
     # TODO - Application 1 - Step 3 - Define a dense layer of size 512
     model.add(Dense(512))
 
+    model.add(Dropout(0.5))
+
     # TODO - Application 1 - Step 3 - Define the output layer
     model.add(Dense(1, activation="sigmoid"))
 
@@ -195,6 +198,31 @@ def defineCNNModelFromScratch(target_size):
     return model
 
 
+def defineCNNModelVGGPretrained():
+
+    # TODO - Exercise 6 - Load the pretrained VGG16 network in a variable called baseModel
+    # The top layers will be omitted; The input_shape will be kept to (150, 150, 3)
+
+    # TODO - Exercise 6 - Visualize the network arhitecture (list of layers)
+
+    # TODO - Exercise 6 - Freeze the baseModel layers to not to allow training
+
+    # Create the final model and add the layers from the baseModel
+    VGG_model = models.Sequential()
+    # VGG_model.add(baseModel)
+
+    # TODO - Exercise 6 - Add the flatten layer
+
+    # TODO - Exercise 6 - Add the dropout layer
+
+    # TODO - Exercise 6 - Add a dense layer of size 512
+
+    # TODO - Exercise 6 - Add the output layer
+
+    # TODO - Exercise 6 - Compile the model
+
+    return VGG_model
+
 
 def imagePreprocessing(base_directory, target_size):
 
@@ -202,7 +230,16 @@ def imagePreprocessing(base_directory, target_size):
     validation_directory = base_directory + "/validation"
 
     # TODO - Application 1 - Step 2 - Create the image data generators for train and validation
-    train_datagen = ImageDataGenerator(rescale=1.0 / 255)
+    train_datagen = ImageDataGenerator(
+        rescale=1.0 / 255,
+        rotation_range=40,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True,
+        fill_mode="nearest",
+    )
     validation_datagen = ImageDataGenerator(rescale=1.0 / 255)
 
     # TODO - Application 1 - Step 2 - Analize the output of the train and validation generators
@@ -263,7 +300,7 @@ def main():
 
     # TODO - Application 1 - Step 4 - Train the model
 
-    weights_name = "Model_cats_dogs_small_dataset.h5"
+    weights_name = "Model_cats_dogs_small_dataset_better.h5"
 
     if not os.path.exists(weights_name):
         history = model.fit(
@@ -274,11 +311,11 @@ def main():
             validation_steps=50,
         )
         model.save(weights_name)
-
         # TODO - Application 1 - Step 5 - Visualize the system performance using the diagnostic curves
         visualizeTheTrainingPerformances(history)
     else:
-        history = model.load_weights(weights_name)
+        model.load_weights(weights_name)
+
 
 
     scores = model.evaluate(validation_generator)
